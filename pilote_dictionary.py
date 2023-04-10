@@ -6,7 +6,7 @@ import ast
 
 if 'df' not in st.session_state:
 	dfs = []
-	for i in range(0,4):
+	for i in range(0,5):
 		tdf = pd.read_parquet(f'data/tmWordsSingles_chunk_{i}.parquet')
 		dfs.append(tdf)
 	df = pd.concat(dfs,axis=0)	
