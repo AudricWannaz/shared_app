@@ -20,7 +20,7 @@ with st.expander('SHOW ABBREVIATIONS ONLY'):
 	st.write(df_abb)
 
 target_lemma = st.text_input('enter exact lemma: ', 'διά')
-target = singles[singles.lemmatized == target_lemma]
+target = df[df.lemmatized == target_lemma]
 
 st.title('EXPLORE TARGET WORD')
 st.write(target)
