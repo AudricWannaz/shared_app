@@ -9,7 +9,7 @@ if 'df' not in st.session_state:
 	for i in range(0,4):
 		tdf = pd.read_parquet(f'data/tmWordsSingles_chunk_{i}.parquet')
 		dfs.append(tdf)
-	df = pd.merge(dfs)	
+	df = pd.concat(dfs,axis=0)	
 	st.session_state['df'] = df
 
 df = st.session_state['df']
