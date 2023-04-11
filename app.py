@@ -6,7 +6,7 @@ import ast
 pd.options.plotting.backend = "plotly"
 import plotly.express as px
 import plotly.graph_objects as go
-from src.visualizations import create_histograms, create_barplot, create_pie_chart, create_3d_bar_plot
+from src.visualizations import create_histograms, create_pie_chart, create_stacked_bar_plot
 
 @st.experimental_memo
 def load_tmwords_data():
@@ -17,26 +17,36 @@ def load_tmwords_data():
 	df = pd.concat(dfs,axis=0)	
 	return df
 df = load_tmwords_data()
-
+df["is_abbreviated"] = df.diplomatic.str.contains('\(')
+df["is_abbreviated"].replace({True: 'Abbreviated', False: "Not Abbreviated"}, inplace = True)
 df_abb = df[df.diplomatic.str.contains('\(')]
 
 
 with st.expander('Show visualizations'):
 	st.plotly_chart(create_histograms(df, df_abb, 'period_min', 'Frequencies of words vs abbreviations over time'))
-	st.plotly_chart(create_barplot(df,df_abb))
-
+	st.plotly_chart(create_stacked_bar_plot(df.groupby(['is_abbreviated','period']).size().reset_index(name='count'), 'period', 'count', 'is_abbreviated', 'Ratio of abbreviated vs non-abbreviated over time periods'))
+	
 	st.header("Abbreviation Type")
 	st.plotly_chart(create_pie_chart(df_abb['abbr_type'].value_counts(), 'Pie chart of abbreviation type percentages - abbreviated'))
-	st.plotly_chart(create_3d_bar_plot(df_abb.groupby(['abbr_type', 'period']).size().reset_index(name='count'), 'period', 'count', 'abbr_type', 'abbr_type over time'))
+	st.plotly_chart(create_stacked_bar_plot(df_abb.groupby(['abbr_type', 'period']).size().reset_index(name='count'), 'period', 'count', 'abbr_type', 'abbr_type over time'))
 	
 	st.header("Genre distribution")
-	st.plotly_chart(create_pie_chart(df_abb['genre'].value_counts(), 'Pie chart of genre percentages - abbreviated'))
-	st.plotly_chart(create_pie_chart(df['genre'].value_counts(), 'Pie chart of genre percentages - non-abbreviated and abbreviated'))
+	
+	abb_genre_count = df_abb['genre'].value_counts()
+	abb_genre_count['oracle question'] = 0
+	st.subheader('Pie chart of genre percentages - abbreviated')
+	st.plotly_chart(create_pie_chart(abb_genre_count, ''))
+	st.subheader('Pie chart of genre percentages - non-abbreviated and abbreviated')
+	st.plotly_chart(create_pie_chart(df['genre'].value_counts(), ''))
 
 
 	st.header("State")
-	st.plotly_chart(create_pie_chart(df_abb['state'].value_counts(), 'Pie chart of state percentages - abbreviated'))
-	st.plotly_chart(create_pie_chart(df['state'].value_counts(), 'Pie chart of state percentages - non-abbreviated and abbreviated'))
+	abb_state_count = df_abb['state'].value_counts()
+	abb_state_count['Unknown'] = 0
+	st.subheader('Pie chart of state percentages - abbreviated')
+	st.plotly_chart(create_pie_chart(abb_state_count, ''))
+	st.subheader('Pie chart of state percentages - non-abbreviated and abbreviated')
+	st.plotly_chart(create_pie_chart(df['state'].value_counts(), ''))
 	st.header("Gender distribution")
 	st.plotly_chart(create_pie_chart(df_abb['gender'].value_counts(), 'Pie chart of gender percentages - abbreviated'))
 	st.plotly_chart(create_pie_chart(df['gender'].value_counts(), 'Pie chart of gender percentages - non-abbreviated and abbreviated'))
